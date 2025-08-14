@@ -1,5 +1,5 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped
-from sqlalchemy.testing.schema import mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 
 
 class Base(DeclarativeBase):
