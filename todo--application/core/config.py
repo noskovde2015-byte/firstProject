@@ -5,12 +5,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class RunConfig(BaseModel):
-    port: int = 8000
-    host: str = "0.0.0.0"
+    port: int = 8002
+    host: str = "127.0.0.1"
+
+
+class ApiV1Prefix(BaseModel):
+    prefix: str = "/v1"
+    user: str = "/user"
+    reg: str = "/register"
 
 
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
+    v1: ApiV1Prefix = ApiV1Prefix()
 
 
 class DataBaseConfig(BaseModel):

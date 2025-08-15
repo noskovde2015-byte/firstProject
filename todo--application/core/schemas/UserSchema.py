@@ -6,7 +6,7 @@ class UserBase(BaseModel):
     age: int
 
 class UserCreate(UserBase):
-    email: str
+    password: str
 
 
 class UserRead(UserBase):
