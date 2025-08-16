@@ -22,4 +22,14 @@ def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.auth.ALGORITHM)
+    return jwt.encode(to_encode, settings.auth.SECRET_KEY, algorithm=settings.auth.ALGORITHM)
+
+
+async def authenticate_user(email: str, password: str, session: AsyncSession):
+    stmt = select(User).where(User.email == email)
+    result: Result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(plain_password=password,hashed_password=user.password):
+        return None
+    return user

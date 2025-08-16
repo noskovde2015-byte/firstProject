@@ -13,6 +13,7 @@ class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
     user: str = "/user"
     reg: str = "/register"
+    log: str = "/login"
 
 
 class ApiPrefix(BaseModel):
