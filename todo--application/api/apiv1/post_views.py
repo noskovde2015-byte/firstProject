@@ -1,10 +1,11 @@
 from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.apiv1.crud.post_crud import get_posts, post_create
+from api.apiv1.crud.post_crud import get_posts, post_create, check_posts
 from core.config import settings
 from core.models import Post, User, db_helper
 from core.schemas.PostSchema import PostRead, PostCreate
 from auth.dependencies import get_current_user
+
 
 
 router = APIRouter(prefix=settings.api.v1.post, tags=['Post'])
@@ -32,3 +33,9 @@ async def create_post(
         user_id=current_user.id,
         post_data=post_data
     )
+
+@router.get("/full", response_model=list[PostRead])
+async def aye(
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    return await check_posts(session=session)

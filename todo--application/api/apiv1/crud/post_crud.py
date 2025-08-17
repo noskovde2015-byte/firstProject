@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Post
 from core.schemas.PostSchema import PostCreate
-from sqlalchemy import select, Result
+from sqlalchemy import select, Result, Sequence
 
 
 async def post_create(
@@ -21,3 +21,12 @@ async def get_posts(session: AsyncSession, user_id: int) -> list[Post]:
     result: Result = await session.execute(stmt)
     posts = result.scalars().all()
     return list(posts)
+
+
+async def check_posts(
+        session: AsyncSession
+) -> Sequence[Post]:
+    stmt = select(Post).order_by(Post.id)
+    result: Result = await session.execute(stmt)
+    posts = result.scalars().all()
+    return posts
