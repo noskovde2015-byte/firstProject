@@ -1,0 +1,38 @@
+from typing import Callable
+
+from fastapi import Request, HTTPException
+from jose import jwt, JWTError
+from starlette import status
+
+from core.config import settings
+
+async def aut_middleware(
+    request: Request,
+    call_next: Callable,
+):
+
+    token = request.cookies.get("user_access_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Требуется авторизация",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    try:
+        payload = jwt.decode(token, settings.auth.SECRET_KEY, algorithms=[settings.auth.ALGORITHM])
+        request.state.user_id = payload["sub"]
+
+        if "sub" not in payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Неверный формат токена"
+
+            )
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен"
+        )
+    return await call_next(request)
+
