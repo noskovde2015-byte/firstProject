@@ -31,6 +31,17 @@ async def login_user(user_data: AuthSchema,
     access_token = create_access_token(
         {"sub": str(check.id)},
     )
+
+    refresh_token = create_access_token(
+        {"sub": str(check.id), "type": "refresh"},
+
+    )
+
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
     response.set_cookie(key="user_access_token", value=access_token, httponly=True)
-    return {"access_token": access_token}
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+
+
 

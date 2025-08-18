@@ -34,6 +34,7 @@ class Auth(BaseModel):
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE: int
+    REFRESH_TOKEN_EXPIRE: int
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
