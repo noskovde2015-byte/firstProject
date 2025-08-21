@@ -54,3 +54,12 @@ async def get_current_user(request: Request,session: AsyncSession = Depends(db_h
             detail="Неверный токен",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def get_current_admin(user: User = Depends(get_current_user)):
+    if user.role.name != "admin":
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Недостаточно прав"
+        )
+    return user

@@ -16,7 +16,8 @@ async def aut_middleware(
         "/openapi.json",
         "/auth/login",
         "/auth/register",
-        "/api/v1/register"
+        "/api/v1/register",
+        "/api/v1/login"
     ]
 
     # Если путь публичный - пропускаем проверку
