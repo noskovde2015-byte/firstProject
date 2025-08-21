@@ -1,10 +1,12 @@
 from fastapi import Depends, APIRouter, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
+from sqlalchemy.orm import object_session
+
 from api.apiv1.crud.post_crud import get_posts, post_create, check_posts
 from core.config import settings
 from core.models import Post, User, db_helper
 from core.schemas.PostSchema import PostRead, PostCreate
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_admin
 
 
 
@@ -36,6 +38,13 @@ async def create_post(
 
 @router.get("/full", response_model=list[PostRead])
 async def aye(
-        session: AsyncSession = Depends(db_helper.session_getter),
+        admin: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.session_getter)
 ):
+    await session.refresh(admin, ["role"])
+    if admin.role.name != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="You are not an admin"
+        )
     return await check_posts(session=session)
