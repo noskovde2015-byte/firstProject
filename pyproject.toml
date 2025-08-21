@@ -13,3 +13,4 @@ sqlalchemy = "^2.0.43"
 python-jose = "^3.5.0"
 bcrypt = "4.0.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+typer = "^0.16.0"

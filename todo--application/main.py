@@ -1,11 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, middleware, Request
 import uvicorn
 from api import router as api_router
 from core.config import settings
+from core.middlewares.middlewares import aut_middleware
 
 
 app = FastAPI()
 app.include_router(api_router)
+
+app.middleware("http")(aut_middleware)
 
 
 

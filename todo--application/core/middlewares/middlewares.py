@@ -10,6 +10,18 @@ async def aut_middleware(
     request: Request,
     call_next: Callable,
 ):
+    public_paths = [
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+        "/auth/login",
+        "/auth/register",
+        "/api/v1/register"
+    ]
+
+    # Если путь публичный - пропускаем проверку
+    if request.url.path in public_paths:
+        return await call_next(request)
 
     token = request.cookies.get("user_access_token")
     if not token:
