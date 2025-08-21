@@ -16,6 +16,7 @@ class ApiV1Prefix(BaseModel):
     log: str = "/login"
     exit: str = "/logout"
     post: str = "/post"
+    adminka: str = "/admin"
 
 
 class ApiPrefix(BaseModel):

@@ -43,5 +43,39 @@ async def make_admin(
     return {"message": f"User {target_user.email} is now admin"}
 
 
+@router.post("/remove")
+async def remove_admin(
+        user_id: int,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.session_getter)
+):
+    await session.refresh(current_user, ["role"])
+
+    if current_user.role.name != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="You are not an admin")
+
+
+    target_user = await session.get(User, user_id)
+    if not target_user:
+        raise HTTPException(status_code=404,
+                            detail="User not found")
+
+    user_role = await session.scalar(select(Role).where(Role.name == "user"))
+    if not user_role:
+        raise HTTPException(status_code=500,
+                            detail="User role not found")
+
+    if target_user.role.name == "user":
+        raise HTTPException(status_code=403,
+                            detail="User is a user")
+
+    target_user.role = user_role
+    await session.commit()
+    return {"message": f"User {target_user.email} is now user"}
+
+
+
 
 
