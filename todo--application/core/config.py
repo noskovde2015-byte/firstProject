@@ -14,6 +14,7 @@ class ApiV1Prefix(BaseModel):
     user: str = "/user"
     reg: str = "/register"
     log: str = "/login"
+    exit: str = "/logout"
     post: str = "/post"
 
 
