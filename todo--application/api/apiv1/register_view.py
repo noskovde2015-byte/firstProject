@@ -10,6 +10,7 @@ from auth.auth import hash_password
 
 
 
+
 router = APIRouter(prefix=settings.api.v1.reg, tags=["Auth"])
 
 
