@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_409_CONFLICT
 
@@ -19,29 +20,35 @@ async def register_api(
         user_data: UserCreate,
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> dict:
+    try:
+        user = await session.scalar(
+            select(User).where(User.email == user_data.email)
+        )
 
-    user = await session.scalar(
-        select(User).where(User.email == user_data.email)
-    )
-
-    if user is not None:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Email already registered")
-
-
-    user_role = await session.scalar(
-        select(Role).where(Role.name == "user")
-    )
+        if user is not None:
+            raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Email already registered")
 
 
-    new_user = User(
-        email=user_data.email,
-        name=user_data.name,
-        password=hash_password(user_data.password),
-        age=user_data.age,
-        role_id=user_role.id,
-    )
+        user_role = await session.scalar(
+            select(Role).where(Role.name == "user")
+        )
 
-    session.add(new_user)
-    await session.commit()
-    await session.refresh(new_user)
-    return {"message": "User registered"}
+
+        new_user = User(
+            email=user_data.email,
+            name=user_data.name,
+            password=hash_password(user_data.password),
+            age=user_data.age,
+            role_id=user_role.id,
+        )
+
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+        return {"message": "User registered"}
+
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=422,
+            detail=e.errors()
+        )
