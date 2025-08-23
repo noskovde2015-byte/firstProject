@@ -36,7 +36,7 @@ async def create_post(
         post_data=post_data
     )
 
-@router.get("/full", response_model=list[PostRead])
+@router.get("/all_users_posts", response_model=list[PostRead])
 async def aye(
         admin: User = Depends(get_current_user),
         session: AsyncSession = Depends(db_helper.session_getter)

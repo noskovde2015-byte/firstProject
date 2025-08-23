@@ -10,14 +10,27 @@ async def post_create(
         user_id: int
 ) -> Post:
 
-    new_post = Post(**post_data.model_dump(), user_id=user_id)
-    session.add(new_post)
-    await session.commit()
-    await session.refresh(new_post)
-    return new_post
+    post_dict = post_data.model_dump()
+    post_dict["priority"] = post_dict["priority"].value
 
-async def get_posts(session: AsyncSession, user_id: int) -> list[Post]:
+    post = Post(
+        **post_dict,
+        user_id=user_id
+    )
+
+    session.add(post)
+    await session.commit()
+    await session.refresh(post)
+    return post
+
+
+
+async def get_posts(session: AsyncSession, user_id: int, categories: str | None = None) -> list[Post]:
     stmt = select(Post).where(Post.user_id == user_id)
+    if categories:
+        stmt = stmt.where(Post.category == categories)
+
+
     result: Result = await session.execute(stmt)
     posts = result.scalars().all()
     return list(posts)

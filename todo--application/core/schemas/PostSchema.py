@@ -1,5 +1,12 @@
+from enum import Enum
+
 from pydantic import BaseModel, ConfigDict, Field
-from core.models.Post import Priority
+
+
+class Priority(Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 class PostBase(BaseModel):
     title: str
