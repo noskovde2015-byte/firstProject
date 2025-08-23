@@ -43,3 +43,10 @@ async def check_posts(
     result: Result = await session.execute(stmt)
     posts = result.scalars().all()
     return posts
+
+
+async def get_post_by_category(session: AsyncSession,user_id: int, category_name: str) -> list[Post]:
+    stmt = select(Post).where(Post.user_id == user_id,Post.category == category_name)
+    result: Result = await session.execute(stmt)
+    posts = result.scalars().all()
+    return list(posts)
