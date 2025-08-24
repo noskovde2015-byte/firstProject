@@ -56,9 +56,8 @@ async def get_posts_by_categories(
         current_user: User = Depends(get_current_user),
         session: AsyncSession = Depends(db_helper.session_getter),
 ):
-    posts = await get_post_by_category(
+    return await get_post_by_category(
         session=session,
         category_name=categories,
         user_id=current_user.id
     )
-    return posts

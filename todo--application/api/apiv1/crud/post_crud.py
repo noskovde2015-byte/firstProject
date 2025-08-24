@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Post
 from core.schemas.PostSchema import PostCreate
@@ -49,4 +50,8 @@ async def get_post_by_category(session: AsyncSession,user_id: int, category_name
     stmt = select(Post).where(Post.user_id == user_id,Post.category == category_name)
     result: Result = await session.execute(stmt)
     posts = result.scalars().all()
+
+    if not posts:
+        raise HTTPException(status_code=404, detail="Post not found")
+
     return list(posts)
