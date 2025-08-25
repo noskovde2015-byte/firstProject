@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-
+from core.logger_settings.logger import logger
 from core.models import db_helper
 from core.config import settings
 from auth.authShchema import AuthSchema
@@ -16,6 +16,7 @@ async def login_user(user_data: AuthSchema,
                     response: Response,
                      session: AsyncSession = Depends(db_helper.session_getter),
                       ):
+    logger.info(f"Вход {user_data.email} в систему")
     check = await authenticate_user(
         session=session,
         email=user_data.email,
@@ -23,6 +24,7 @@ async def login_user(user_data: AuthSchema,
     )
 
     if check is None:
+        logger.warning("Введены неверные данные")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -37,6 +39,7 @@ async def login_user(user_data: AuthSchema,
 
     )
 
+    logger.info(f"Пользователь {user_data.email} успешно вошел в систему")
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
     response.set_cookie(key="user_access_token", value=access_token, httponly=True)
     return {"access_token": access_token, "refresh_token": refresh_token}
