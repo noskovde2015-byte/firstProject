@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy import Result, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import user
-
+from core.logger_settings.logger import logger
 from core.models import User, Post
 
 
@@ -15,6 +15,7 @@ async def get_all_user(session: AsyncSession) -> list[User]:
 
 async def delete_user(session: AsyncSession, user_id: int, current_user_id: int):
     if user_id == current_user_id:
+        logger.warning(f"Попытка удаления самого себя")
         raise HTTPException(
             status_code=403,
             detail="You can not delete yourself"
@@ -26,6 +27,7 @@ async def delete_user(session: AsyncSession, user_id: int, current_user_id: int)
 
 
     if not users:
+        logger.warning(f"Пользователь не найден")
         raise HTTPException(
             status_code=404,
             detail="User not found"
@@ -47,7 +49,7 @@ async def delete_user(session: AsyncSession, user_id: int, current_user_id: int)
     await session.delete(users)
     await session.commit()
 
-
+    logger.info(f"Пользователь успешно удален")
     return {
         "message": "User deleted",
         "user_id": user_id,
