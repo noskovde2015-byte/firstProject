@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Post
 from core.schemas.PostSchema import PostCreate
 from sqlalchemy import select, Result, Sequence
+from core.logger_settings.logger import logger
+
 
 
 async def post_create(
@@ -37,6 +39,8 @@ async def get_posts(session: AsyncSession, user_id: int, categories: str | None 
     return list(posts)
 
 
+
+
 async def check_posts(
         session: AsyncSession
 ) -> Sequence[Post]:
@@ -52,6 +56,7 @@ async def get_post_by_category(session: AsyncSession,user_id: int, category_name
     posts = result.scalars().all()
 
     if not posts:
+        logger.warning(f"Поиск по несущуствующей категории {category_name}")
         raise HTTPException(status_code=404, detail="Post not found")
 
     return list(posts)
