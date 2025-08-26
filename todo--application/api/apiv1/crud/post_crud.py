@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Post
-from core.schemas.PostSchema import PostCreate
+from core.schemas.PostSchema import PostCreate, PostUpdate
 from sqlalchemy import select, Result, Sequence, delete
 from core.logger_settings.logger import logger
 
@@ -90,3 +90,40 @@ async def delete_post(
         "post_id": post_id,
         "title": post.title,
     }
+
+
+async def update_post(
+        session: AsyncSession,
+        post_id: int,
+        post_data: PostUpdate,
+        user_id: int,
+):
+    logger.info(f"Обновление поста {post_id} пользователем {user_id}")
+
+    stmt = select(Post).where(Post.id == post_id)
+    result: Result = await session.execute(stmt)
+    post = result.scalar_one_or_none()
+
+    if not post:
+        logger.warning(f"Пост {post_id} не найден для обновления")
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    if post.user_id != user_id:
+        logger.warning(f"Попытка обновления не своего поста от {post.user_id}")
+        raise HTTPException(status_code=403, detail="Нельзя удалить не свой пост")
+
+    update_dict = post_data.model_dump(exclude_unset=True)
+
+    if 'priority' in update_dict and update_dict['priority'] is not None:
+        update_dict['priority'] = update_dict['priority'].value
+
+    for key, value in update_dict.items():
+        setattr(post, key, value)
+
+    session.add(post)
+    await session.commit()
+    await session.refresh(post)
+
+    logger.info(f"Пост {post_id} успешно обновлен пользователем {user_id}")
+
+    return post
