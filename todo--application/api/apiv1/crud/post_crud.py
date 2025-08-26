@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Post
 from core.schemas.PostSchema import PostCreate
-from sqlalchemy import select, Result, Sequence
+from sqlalchemy import select, Result, Sequence, delete
 from core.logger_settings.logger import logger
 
 
@@ -60,3 +60,33 @@ async def get_post_by_category(session: AsyncSession,user_id: int, category_name
         raise HTTPException(status_code=404, detail="Post not found")
 
     return list(posts)
+
+
+async def delete_post(
+        session: AsyncSession,
+        post_id: int,
+        user_id: int,
+):
+    logger.info(f"Удаление поста {post_id}")
+
+    stmt = select(Post).where(Post.id == post_id)
+    result: Result = await session.execute(stmt)
+    post = result.scalar_one_or_none()
+
+    if not post:
+        logger.warning(f"Пост {post_id} не найден")
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    if post.user_id != user_id:
+        logger.warning(f"Попытка удаления не своего поста от {post.user_id}")
+        raise HTTPException(status_code=403, detail="Нельзя удалить не свой пост")
+
+    await session.delete(post)
+    await session.commit()
+    logger.info(f"Пост {post_id} успешно удален")
+
+    return {
+        "message": "Post deleted successfully",
+        "post_id": post_id,
+        "title": post.title,
+    }

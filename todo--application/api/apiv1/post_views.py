@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.orm import object_session
 
-from api.apiv1.crud.post_crud import get_posts, post_create, check_posts, get_post_by_category
+from api.apiv1.crud.post_crud import get_posts, post_create, check_posts, get_post_by_category, delete_post
 from core.config import settings
 from core.models import Post, User, db_helper
 from core.schemas.PostSchema import PostRead, PostCreate
@@ -79,3 +79,33 @@ async def get_posts_by_categories(
     )
     logger.info(f"Выдано {len(category_post)} по категории {categories}")
     return category_post
+
+
+@router.delete("")
+async def del_post(
+        post_id: int,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    logger.info(f"Запрос на удаление поста {post_id} от пользователя {current_user.email}")
+    try:
+        result = await delete_post(
+            user_id=current_user.id,
+            post_id=post_id,
+            session=session,
+        )
+        logger.info(f"Пользователь {current_user.email} успешно удалил пост '{result['title']}'")
+        return result
+
+    except HTTPException as e:
+        raise e
+
+    except Exception as e:
+        logger.error(
+            f"Неожиданная ошибка при удалении поста {post_id} "
+            f"пользователем {current_user.email}: {str(e)}"
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
