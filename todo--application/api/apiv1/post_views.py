@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.orm import object_session
 
-from api.apiv1.crud.post_crud import get_posts, post_create, check_posts, get_post_by_category, delete_post, update_post
+from api.apiv1.crud.post_crud import get_posts, post_create, check_posts, get_post_by_category, delete_post, update_post, active_post
 from core.config import settings
 from core.models import Post, User, db_helper
 from core.schemas.PostSchema import PostRead, PostCreate, PostUpdate
@@ -151,3 +151,43 @@ async def update_post_router(
             status_code=500,
             detail="Internal server error"
         )
+
+
+@router.get("/active_post", response_model=list[PostRead])
+async def get_active_posts(
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    logger.info(f"Запрос активных постов от {current_user.email}")
+
+    try:
+        posts = await active_post(
+            session=session,
+            user_id=current_user.id
+        )
+
+        if not posts:
+            logger.warning(f"Активных постов нет")
+            raise HTTPException(
+                status_code=404,
+                detail="post not found"
+            )
+
+        logger.info(f"Пользователь {current_user.email} получил {len(posts)} активных постов")
+        return posts
+
+    except HTTPException as e:
+        raise e
+
+    except Exception as e:
+        logger.error(
+            f"Неожиданная ошибка при получении активных постов"
+            f"пользователем {current_user.email}: {str(e)}"
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
+
+

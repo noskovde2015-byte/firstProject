@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 
 class Post(Base):
     __tablename__ = 'posts'
+    __table_args__ = (
+        {'extend_existing': True},
+    )
 
     title: Mapped[str]
     body: Mapped[str]

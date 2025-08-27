@@ -127,3 +127,14 @@ async def update_post(
     logger.info(f"Пост {post_id} успешно обновлен пользователем {user_id}")
 
     return post
+
+
+async def active_post(
+        session: AsyncSession,
+        user_id: int,
+):
+    stmt = select(Post).where(Post.user_id == user_id, Post.is_active == True)
+    result: Result = await session.execute(stmt)
+    posts = result.scalars().all()
+    return list(posts)
+
