@@ -8,14 +8,23 @@ from core.models import db_helper, User
 from core.config import settings
 
 
+async def get_current_user(
+        request: Request,
+        session: AsyncSession = Depends(db_helper.session_getter)
+) -> User:
 
-async def get_current_user(request: Request,session: AsyncSession = Depends(db_helper.session_getter)) -> User:
     token = request.cookies.get('user_access_token')
+
+
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
 
     if not token:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Требуется авторизация",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -30,22 +39,21 @@ async def get_current_user(request: Request,session: AsyncSession = Depends(db_h
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-
         user_id = payload.get("sub")
-
         if not user_id:
             raise HTTPException(
                 status_code=HTTP_401_UNAUTHORIZED,
                 detail="Неверный формат токена",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        user = await session.get(User, int(user_id))
 
+        user = await session.get(User, int(user_id))
         if not user:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
                 detail="Пользователь не найден"
             )
+
         return user
 
     except (JWTError, ValueError) as e:
