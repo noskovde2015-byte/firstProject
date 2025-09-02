@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     email: EmailStr
     age: int = Field(ge=18, le=110)
 
+
 class UserCreate(UserBase):
     password: str = Field(min_length=6, max_length=50)
 
@@ -23,5 +24,6 @@ class UserRead(UserBase):
         from_attributes=True
     )
     id: int
+    role_id: int
 
 
