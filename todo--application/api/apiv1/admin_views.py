@@ -8,6 +8,7 @@ from auth.dependencies import get_current_user
 from core.models import db_helper
 from sqlalchemy import select
 
+from core.schemas.UserSchema import UserRead
 
 router = APIRouter(prefix=settings.api.v1.adminka, tags=["Admin"])
 
@@ -93,6 +94,22 @@ async def remove_admin(
     await session.commit()
     logger.info(f"Пользователь {target_user.email} тепепь user")
     return {"message": f"User {target_user.email} is now user"}
+
+
+@router.get("/me")
+async def get_current_user_info(
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.session_getter)
+) -> dict:
+    user_data = {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "age": current_user.age,
+        "role_id": current_user.role_id
+    }
+
+    return user_data
 
 
 
