@@ -20,17 +20,15 @@ async def aut_middleware(
         "/api/v1/login"
     ]
 
-    # Если путь публичный - пропускаем проверку
-    if request.url.path in public_paths:
+
+    if request.method == "OPTIONS" or request.url.path in public_paths:
         return await call_next(request)
 
     token = request.cookies.get("user_access_token")
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Требуется авторизация",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, settings.auth.SECRET_KEY, algorithms=[settings.auth.ALGORITHM])
         request.state.user_id = payload["sub"]
