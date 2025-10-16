@@ -27,7 +27,9 @@ app.include_router(api_router)
 
 app.middleware("http")(aut_middleware)
 
-
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 
 
