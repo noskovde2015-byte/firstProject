@@ -12,6 +12,7 @@ async def aut_middleware(
 ):
     public_paths = [
         "/docs",
+        "/",
         "/redoc",
         "/openapi.json",
         "/auth/login",
