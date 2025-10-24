@@ -36,6 +36,15 @@ async def register_api(
             select(Role).where(Role.name == "user")
         )
 
+        if not user_role:
+            user_role = Role(
+                name = "user",
+                permissions = {"message": "not all root"}
+            )
+        session.add(user_role)
+        await session.commit()
+        await session.refresh(user_role)
+
 
         new_user = User(
             email=user_data.email,
